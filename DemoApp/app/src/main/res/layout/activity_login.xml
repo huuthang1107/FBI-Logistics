@@ -7,63 +7,94 @@
     android:background="#fff"
     tools:context=".view.activity.LoginActivity"
     android:id="@+id/main_professional">
+    <!-- TextView: label login -->
+    <TextView
+        android:id="@+id/tv_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/login"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
     <ImageView
-        android:layout_marginTop="10dp"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:id="@+id/imageViewFBI"
-        android:src="@drawable/logofbi"
-        android:scaleType="centerCrop"
-        android:layout_marginLeft="130dp"
-        android:layout_marginBottom="30dp"
-        />
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_below="@id/tv_login"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/logofbi" />
 
-    <EditText
-        android:id="@+id/username"
+    <!-- EditText: Input Email-->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/imageViewFBI"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
-        android:background="#064d83"
-        android:drawableLeft="@drawable/ic_baseline_person_outline_24"
-        android:drawablePadding="20dp"
-        android:hint="Username"
-        android:padding="20dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white" />
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
 
-    <EditText
-        android:id="@+id/password"
+        <EditText
+            android:id="@+id/et_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- EditText: Input Password-->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/username"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
-        android:background="#064d83"
-        android:drawableLeft="@drawable/ic_baseline_info_24"
-        android:drawablePadding="20dp"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:padding="20dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white" />
+        android:layout_below="@id/til_email"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="7dp"
+        app:passwordToggleEnabled="true">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/loginbtn"
+        <EditText
+            android:id="@+id/et_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:inputType="textEmailAddress" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Button Register -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_login"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/password"
+        android:layout_below="@id/tv_recover_password"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:backgroundTint="#064d83"
-        android:text="LOGIN" />
+        android:layout_marginTop="15dp"
+        android:backgroundTint="@color/btn_color"
+        android:drawablePadding="20dp"
+        android:minWidth="150dp"
+        android:text="@string/sigin"
+        android:textSize="18sp" />
+
+
+
+    <!-- TextView: go to loginActivity-->
+    <TextView
+        android:id="@+id/tv_not_have_account"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/til_password"
+        android:layout_marginTop="10dp"
+        android:text="Not have account? Register"
+        android:textColor="@color/black" />
+    <!-- TextView: go to loginActivity-->
+    <TextView
+        android:id="@+id/tv_recover_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_not_have_account"
+        android:layout_marginTop="10dp"
+        android:text="Forgot Password? Recover"
+        android:textColor="@color/black" />
 
 </RelativeLayout>

@@ -19,8 +19,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.dom.ImportDomAdapter;
+import com.example.demoapp.adapter.ImportDomAdapter;
 import com.example.demoapp.databinding.FragmentDomImportBinding;
+import com.example.demoapp.model.DomDry;
 import com.example.demoapp.model.DomImport;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.dom.dom_import.DialogDomImportInsert;

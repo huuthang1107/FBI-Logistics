@@ -12,7 +12,7 @@
             android:title="@string/Mesenger"/>
         <item android:id="@+id/tab_logout_fcl"
             android:icon="@drawable/ic_logout"
-            android:title="@string/log_out"/>
+            android:title="@string/logout"/>
     </group>
 
 </menu>

@@ -38,10 +38,10 @@
                 android:title="@string/nav_depot"
                 android:icon="@drawable/ic_baseline_favorite_24"/>
             <item android:id="@+id/nav_message"
-                android:title="@string/tin_nhan"
+                android:title="@string/nav_chat"
                 android:icon="@drawable/ic_message"/>
-            <item android:id="@+id/log_out"
-                android:title="Đăng xuất"
+            <item android:id="@+id/nav_logout"
+                android:title="@string/logout"
                 android:icon="@drawable/ic_logout"/>
         </menu>
     </item>

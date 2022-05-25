@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "159618973418",
-    "project_id": "app-chat-fbilogitics",
-    "storage_bucket": "app-chat-fbilogitics.appspot.com"
+    "project_number": "671027089957",
+    "project_id": "data-logistics-ae8ff",
+    "storage_bucket": "data-logistics-ae8ff.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:159618973418:android:8d3757c19ee32abca4a193",
+        "mobilesdk_app_id": "1:671027089957:android:8c7dd6d8606a344cf7a5cc",
         "android_client_info": {
           "package_name": "com.example.demoapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "159618973418-a12aqp96vcl6ibc7omumt9ncgl5h89fo.apps.googleusercontent.com",
+          "client_id": "671027089957-tqpde6ku9j294ijago3ebhp04t5euido.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.demoapp",
+            "certificate_hash": "04340c1348335ba43397dae2db57a9c6d6e79fc1"
+          }
+        },
+        {
+          "client_id": "671027089957-127a4c3m0j0cbu5ssrt9pm4f37v5h1sl.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBI0PkXPkg5KkZ_BnatMPy4vFoemIp9Hpk"
+          "current_key": "AIzaSyCtMFFhPKcCLtKndvWB7c6ga8whDoNL530"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "159618973418-a12aqp96vcl6ibc7omumt9ncgl5h89fo.apps.googleusercontent.com",
+              "client_id": "671027089957-127a4c3m0j0cbu5ssrt9pm4f37v5h1sl.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
