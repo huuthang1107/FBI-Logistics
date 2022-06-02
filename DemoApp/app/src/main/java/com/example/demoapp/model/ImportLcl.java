@@ -1,74 +1,26 @@
 package com.example.demoapp.model;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 
 public class ImportLcl implements Serializable {
-    @SerializedName("stt")
-    @Expose
     private String stt;
-
-    @SerializedName("term")
-    @Expose
     private String term;
-
-    @SerializedName("pol")
-    @Expose
     private String pol;
-
-    @SerializedName("pod")
-    @Expose
     private String pod;
-
-    @SerializedName("cargo")
-    @Expose
     private String cargo;
-
-    @SerializedName("of")
-    @Expose
     private String of;
-
-    @SerializedName("local_pol")
-    @Expose
     private String localPol;
-
-    @SerializedName("local_pod")
-    @Expose
     private String localPod;
-
-    @SerializedName("carrier")
-    @Expose
     private String carrier;
-
-    @SerializedName("schedule")
-    @Expose
     private String schedule;
-
-    @SerializedName("transit_time")
-    @Expose
     private String transitTime;
-
-    @SerializedName("valid")
-    @Expose
     private String valid;
-
-    @SerializedName("note")
-    @Expose
     private String note;
-
-    @SerializedName("month")
-    @Expose
     private String month;
-
-    @SerializedName("continent")
-    @Expose
     private String continent;
-
-    @SerializedName("created_date")
-    @Expose
     private String createdDate;
+
+    public ImportLcl(){}
 
     public ImportLcl(String stt, String term, String pol, String pod, String cargo, String of, String localPol,
                      String localPod, String carrier, String schedule, String transitTime, String valid, String note, String month, String continent, String createdDate) {

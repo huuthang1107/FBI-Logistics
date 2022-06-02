@@ -13,38 +13,33 @@
         android:theme="@style/Theme.DemoApp"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".view.activity.imp.ImportPageActivity"
+            android:name=".view.activity.chat.PostDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GroupChatFinal" />
+        <activity
+            android:name=".view.activity.chat.DetailProfileActivity"
+            android:exported="true"
+            android:theme="@style/Theme.GroupChatFinal"></activity>
+        <activity
+            android:name=".view.activity.chat.ChatActivity"
             android:exported="false" />
         <activity
-            android:name=".view.activity.log.LogPageActivity"
-            android:exported="false" />
+            android:name=".view.activity.chat.AddPostActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GroupChatFinal" />
         <activity
-            android:name=".view.activity.fcl.FclPageActivity"
-            android:exported="true" />
-        <activity
-            android:name=".view.activity.message.UsersActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.activity.message.ChatActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.activity.message.MainMessageActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.activity.login_register.SignInActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:name=".view.activity.chat.DashboardActivity"
+            android:exported="true"
+            android:theme="@style/Theme.GroupChatFinal">
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
-            android:name=".view.activity.login_register.SignUpActivity"
-            android:exported="false" />
+            android:name=".view.activity.loginAndRegister.RegisterActivity"
+            android:exported="true"
+            android:theme="@style/Theme.GroupChatFinal" />
         <activity
             android:name=".view.activity.air.AirPageActivity"
-            android:exported="true" />
+            android:exported="true"></activity>
         <activity
             android:name=".view.activity.sale.waterway.WaterWayActivity"
             android:exported="true" />
@@ -60,7 +55,7 @@
         <activity
             android:name=".view.activity.imp.ProImportActivity"
             android:exported="true"
-            android:label="@string/title_activity_dom"
+            android:label="@string/label_import_imp"
             android:theme="@style/Theme.DemoApp.NoActionBar" />
         <activity
             android:name=".view.activity.dom.DomActivity"
@@ -102,31 +97,26 @@
             android:name=".view.activity.sale.SaleActivity"
             android:exported="true" />
         <activity
+            android:name=".view.activity.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".view.activity.sale.TablePriceAirActivity"
             android:exported="true" />
         <activity
             android:name=".view.activity.LoginActivity"
-            android:exported="true" />
-
-        <service
-            android:name=".firebase.MessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+            android:exported="true"
+            android:theme="@style/Theme.GroupChatFinal">
+        </activity>
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-
-        <service
-            android:name=".firebase.MessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
     </application>
 
 </manifest>

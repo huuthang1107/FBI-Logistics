@@ -1,21 +1,38 @@
 package com.example.demoapp.view.activity.log;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.viewPager.ViewPagerAdapterLog;
 import com.example.demoapp.databinding.ActivityLogProBinding;
-import com.example.demoapp.transformer.ZoomOutPageTransformer;
-import com.google.android.material.navigation.NavigationBarView;
+import com.example.demoapp.view.activity.LoginActivity;
+import com.example.demoapp.view.activity.chat.DashboardActivity;
+import com.example.demoapp.view.fragment.home.HomeFragment;
+import com.example.demoapp.view.fragment.log.LogFragment;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-public class LogProActivity extends AppCompatActivity {
+public class LogProActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private ActivityLogProBinding binding;
+
+    private static final int FRAGMENT_HOME = 0;
+    private static final int FRAGMENT_LOG = 1;
+    private static final int ACTIVITY_MESSAGE = 2;
+    private static final int LOG_OUT = 3;
+
+    private FirebaseAuth mAuth;
+
+    private int mCurrentFragment = FRAGMENT_HOME;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,72 +41,76 @@ public class LogProActivity extends AppCompatActivity {
         binding = ActivityLogProBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
-        bottomMenu();
-        setupViewPager();
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        binding.drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        binding.navigationView.setNavigationItemSelectedListener(this);
 
-//        BottomNavigationView navView = findViewById(R.id.nav_view);
-//        // Passing each menu ID as a set of Ids because each
-//        // menu should be considered as top level destinations.
-//        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-//                R.id.navigation_home, R.id.navigation_log)
-//                .build();
-//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_log_pro);
-////        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-//        NavigationUI.setupWithNavController(binding.navView, navController);
+        mAuth = FirebaseAuth.getInstance();
+
+        replaceFragment(new HomeFragment());
+        binding.navigationView.getMenu().findItem(R.id.navigation_home_log).setChecked(true);
+
     }
 
-    private void setupViewPager() {
-        ViewPagerAdapterLog viewPagerAdapterLog = new ViewPagerAdapterLog(this);
-        binding.viewPagerLog.setAdapter(viewPagerAdapterLog);
-    }
-
-    private void bottomMenu() {
-        binding.botomNavLog.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.navigation_home:
-                        binding.viewPagerLog.setCurrentItem(0);
-                        break;
-                    case R.id.navigation_log:
-                        binding.viewPagerLog.setCurrentItem(1);
-                        break;
-                    case R.id.nav_message:
-                        binding.viewPagerLog.setCurrentItem(2);
-                    case R.id.nav_logout:
-                        logout();
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.navigation_home_log:
+                if (mCurrentFragment != FRAGMENT_HOME) {
+                    replaceFragment(new HomeFragment());
+                    mCurrentFragment = FRAGMENT_HOME;
+                    binding.toolbar.setTitle("Home");
                 }
-                return true;
-            }
-        });
-        binding.viewPagerLog.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                switch (position){
-
-                    case 0:
-                        binding.botomNavLog.getMenu().findItem(R.id.navigation_home).setChecked(true);
-                        binding.viewPagerLog.setPageTransformer(new ZoomOutPageTransformer());
-                        break;
-
-                    case 1:
-                        binding.botomNavLog.getMenu().findItem(R.id.navigation_log).setChecked(true);
-                        binding.viewPagerLog.setPageTransformer(new ZoomOutPageTransformer());
-                    case 2:
-                        binding.botomNavLog.getMenu().findItem(R.id.nav_message).setChecked(true);
-                        binding.viewPagerLog.setPageTransformer(new ZoomOutPageTransformer());
-
-                        break;
-
+                break;
+            case R.id.navigation_log:
+                if (mCurrentFragment != FRAGMENT_LOG) {
+                    replaceFragment(new LogFragment());
+                    mCurrentFragment = FRAGMENT_LOG;
+                    binding.toolbar.setTitle("LOG");
                 }
-            }
-        });
+                break;
+            case R.id.navigation_message_log:
+                if (mCurrentFragment != ACTIVITY_MESSAGE) {
+                    Intent intent = new Intent(this, DashboardActivity.class);
+                    startActivity(intent);
+                }
+                break;
+            case R.id.navigation_logout_log:
+                if (mCurrentFragment != LOG_OUT) {
+                    mAuth.signOut();
+                    checkUserStatus();
+                }
+                finish();
+        }
+        binding.drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 
-    private void logout() {
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
 
+        } else {
+            startActivity(new Intent(LogProActivity.this, LoginActivity.class));
+            finish();
+        }
     }
 
+    private void replaceFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_frame, fragment);
+        transaction.commit();
+    }
 
+    @Override
+    public void onBackPressed() {
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+
+    }
 }

@@ -1,6 +1,8 @@
 package com.example.demoapp.view.dialog.fcl;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -18,29 +20,38 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentDialogUpdateFclBinding;
-import com.example.demoapp.model.Fcl;
+import com.example.demoapp.model.FCLModel;
 import com.example.demoapp.utilities.Constants;
+import com.example.demoapp.view.activity.LoginActivity;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
 import com.example.demoapp.viewmodel.FclViewModel;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class UpdateFclDialog extends DialogFragment implements View.OnClickListener {
 
     private final String[] listStr = new String[3];
 
-    private Fcl fcl;
+    private FCLModel fcl;
 
     private FragmentDialogUpdateFclBinding binding;
+
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
 
     private FclViewModel mFclViewModel;
     private CommunicateViewModel mCommunicateViewModel;
@@ -70,6 +81,11 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
         mFclViewModel = new ViewModelProvider(this).get(FclViewModel.class);
         mCommunicateViewModel = new ViewModelProvider(requireActivity()).get(CommunicateViewModel.class);
 
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
+
+        progressDialog = new ProgressDialog(getContext());
+
         bundle = getArguments();
         setInfo();
 
@@ -83,10 +99,21 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
         return view;
     }
 
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
+    }
+
     public void setInfo() {
 
         if (bundle != null) {
-            fcl = (Fcl) bundle.getSerializable(Constants.FCL_UPDATE);
+            fcl = (FCLModel) bundle.getSerializable(Constants.FCL_UPDATE);
 
             binding.updateAutoMonth.setText(fcl.getMonth());
             binding.updateAutoContainer.setText(fcl.getType());
@@ -98,10 +125,10 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
             Objects.requireNonNull(binding.tfOf45.getEditText()).setText(fcl.getOf45());
             Objects.requireNonNull(binding.tfSu20.getEditText()).setText(fcl.getSu20());
             Objects.requireNonNull(binding.tfSu40.getEditText()).setText(fcl.getSu40());
-            Objects.requireNonNull(binding.tfLines.getEditText()).setText(fcl.getLinelist());
+            Objects.requireNonNull(binding.tfLines.getEditText()).setText(fcl.getLine());
             Objects.requireNonNull(binding.tfNotes.getEditText()).setText(fcl.getNotes());
             Objects.requireNonNull(binding.tfValid.getEditText()).setText(fcl.getValid());
-            Objects.requireNonNull(binding.tfNotes2.getEditText()).setText(fcl.getNotes2());
+            Objects.requireNonNull(binding.tfNotes2.getEditText()).setText(fcl.getNote2());
         } else {
             Toast.makeText(getContext(), "GetData Failed", Toast.LENGTH_LONG).show();
         }
@@ -254,7 +281,6 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
      * This method used to get data user typing and insert them into database
      */
     public void updateFcl() {
-
         String pol = Objects.requireNonNull(binding.tfPol.getEditText()).getText().toString();
         String pod = Objects.requireNonNull(binding.tfPod.getEditText()).getText().toString();
         String of20 = Objects.requireNonNull(binding.tfOf20.getEditText()).getText().toString();
@@ -267,22 +293,41 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
         String valid = Objects.requireNonNull(binding.tfValid.getEditText()).getText().toString();
         String note2 = Objects.requireNonNull(binding.tfNotes2.getEditText()).getText().toString();
 
-        mCommunicateViewModel.makeChanges();
-        Call<Fcl> call = mFclViewModel.updateFcl(fcl.getStt(), pol, pod, of20, of40, of45, su20, su40, line, notes, valid, note2, listStr[1], listStr[0], listStr[2]);
 
-        call.enqueue(new Callback<Fcl>() {
-            @Override
-            public void onResponse(@NonNull Call<Fcl> call, @NonNull Response<Fcl> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(getContext(), "Created Successful!!", Toast.LENGTH_LONG).show();
-                }
-            }
+        HashMap<Object, String> hashMap = new HashMap<>();
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+        hashMap.put("pol", pol);
+        hashMap.put("pod", pod);
+        hashMap.put("of20", of20);
+        hashMap.put("of40", of40);
+        hashMap.put("of45", of45);
+        hashMap.put("su20", su20);
+        hashMap.put("su40", su40);
+        hashMap.put("line", line);
+        hashMap.put("of20", of20);
+        hashMap.put("of40", of40);
+        hashMap.put("of45", of45);
+        hashMap.put("notes", notes);
+        hashMap.put("valid", valid);
+        hashMap.put("note2", note2);
+        hashMap.put("type", listStr[0]);
+        hashMap.put("month", listStr[1]);
+        hashMap.put("continent", listStr[2]);
 
-            @Override
-            public void onFailure(@NonNull Call<Fcl> call, @NonNull Throwable t) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("FCL");
+        // put data in this ref
+//        ref.child("pTime").updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void unused) {
+//
+//            }
+//        });
+    }
 
-            }
-        });
+    public void updateFCL(){
+
     }
 
     public boolean isFilled() {

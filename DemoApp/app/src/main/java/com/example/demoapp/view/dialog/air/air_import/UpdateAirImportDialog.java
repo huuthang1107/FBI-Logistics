@@ -1,5 +1,7 @@
 package com.example.demoapp.view.dialog.air.air_import;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,38 +10,51 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentUpdateAirImportDialogBinding;
 import com.example.demoapp.model.AirImport;
 import com.example.demoapp.utilities.Constants;
-import com.example.demoapp.viewmodel.AirImportViewModel;
-import com.example.demoapp.viewmodel.CommunicateViewModel;
+import com.example.demoapp.view.activity.LoginActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class UpdateAirImportDialog extends DialogFragment implements View.OnClickListener {
     private FragmentUpdateAirImportDialogBinding mAirImportDialogBinding;
     private final String[] listPriceAirImport = new String[2];
-    private AirImportViewModel mAirImportViewModel;
     private Bundle mBundle;
     private AirImport mAirImport;
-    private CommunicateViewModel mCommunicateViewModel;
+    private List<AirImport> airList;
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
     public static UpdateAirImportDialog getInstance(){
         return  new UpdateAirImportDialog();
     }
@@ -50,8 +65,30 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
         mAirImportDialogBinding = FragmentUpdateAirImportDialogBinding.inflate(inflater, container, false);
         View view = mAirImportDialogBinding.getRoot();
 
-        mAirImportViewModel = new ViewModelProvider(this).get(AirImportViewModel.class);
-         mCommunicateViewModel = new ViewModelProvider(getActivity()).get(CommunicateViewModel.class);
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
+
+        airList = new ArrayList<>();
+        progressDialog = new ProgressDialog(getContext());
+
+        // get some info of current user to include in post
+        userDBRef = FirebaseDatabase.getInstance().getReference("Users");
+        Query query = userDBRef.orderByChild("email").equalTo(email);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    name = "" + ds.child("name").getValue();
+                    email = "" + ds.child("email").getValue();
+                    dp = "" + ds.child("image").getValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         mBundle = getArguments();
         updateInformationImport();
@@ -60,6 +97,17 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
         setUpButtons();
 
         return view;
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
     }
 
     public void showDatePicker() {
@@ -175,6 +223,7 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
 
 
     private void insertAirImport() {
+        String timeStamp = String.valueOf(System.currentTimeMillis());
         String strAol = Objects.requireNonNull(mAirImportDialogBinding.tfPolAirImport.getEditText()).getText().toString();
         String strAod = Objects.requireNonNull(mAirImportDialogBinding.tfPodAirImport.getEditText()).getText().toString();
         String strDim = Objects.requireNonNull(mAirImportDialogBinding.tfDimAirImport.getEditText()).getText().toString();
@@ -188,21 +237,37 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
         String strValid = Objects.requireNonNull(mAirImportDialogBinding.tfValidAirImport.getEditText()).getText().toString();
         String strNotes = Objects.requireNonNull(mAirImportDialogBinding.tfNotesAirImport.getEditText()).getText().toString();
 
-        mCommunicateViewModel.makeChanges();
-        Call<AirImport> call = mAirImportViewModel.insertAir(strAol, strAod, strDim, strGross, strType,
-                strFreight, strSurcharge, strLine, strSchedule, strTransittime, strValid, strNotes,
-                listPriceAirImport[0], listPriceAirImport[1], getCreatedDate());
-        call.enqueue(new Callback<AirImport>() {
+        HashMap<Object, String> hashMap = new HashMap<>();
+        hashMap.put("aol", strAol);
+        hashMap.put("aod", strAod);
+        hashMap.put("dim", strDim);
+        hashMap.put("grossweight", strGross);
+        hashMap.put("typeofcargo", strType);
+        hashMap.put("airfreight", strFreight);
+        hashMap.put("surcharge", strSurcharge);
+        hashMap.put("airlines", strLine);
+        hashMap.put("schedule", strSchedule);
+        hashMap.put("transittime", strTransittime);
+        hashMap.put("valid", strValid);
+        hashMap.put("note", strNotes);
+        hashMap.put("month", listPriceAirImport[0]);
+        hashMap.put("continent", listPriceAirImport[1]);
+        hashMap.put("date_created", getCreatedDate());
+        hashMap.put("pTime", timeStamp);
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Import");
+        ref.child(timeStamp).setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onResponse(Call<AirImport> call, Response<AirImport> response) {
-                if(response.isSuccessful()){
-                    Toast.makeText(getContext(), "Created Successful!!", Toast.LENGTH_LONG).show();
-                }
+            public void onSuccess(Void unused) {
+                progressDialog.dismiss();
             }
-
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(Call<AirImport> call, Throwable t) {
-
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -223,22 +288,22 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
         String strValid = Objects.requireNonNull(mAirImportDialogBinding.tfValidAirImport.getEditText()).getText().toString();
         String strNotes = Objects.requireNonNull(mAirImportDialogBinding.tfNotesAirImport.getEditText()).getText().toString();
 
-        mCommunicateViewModel.makeChanges();
-        Call<AirImport> call = mAirImportViewModel.updateAir(mAirImport.getStt(), strAol, strAod, strDim, strGross, strType,
-                strFreight, strSurcharge, strLine, strSchedule, strTransittime, strValid, strNotes,
-                listPriceAirImport[0], listPriceAirImport[1]);
-        call.enqueue(new Callback<AirImport>() {
-            @Override
-            public void onResponse(Call<AirImport> call, Response<AirImport> response) {
-                if(response.isSuccessful()){
-                    Toast.makeText(getContext(), "Update Successful!!", Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<AirImport> call, Throwable t) {
-
-            }
-        });
+//        mCommunicateViewModel.makeChanges();
+//        Call<AirImport> call = mAirImportViewModel.updateAir(mAirImport.getStt(), strAol, strAod, strDim, strGross, strType,
+//                strFreight, strSurcharge, strLine, strSchedule, strTransittime, strValid, strNotes,
+//                listPriceAirImport[0], listPriceAirImport[1]);
+//        call.enqueue(new Callback<AirImport>() {
+//            @Override
+//            public void onResponse(Call<AirImport> call, Response<AirImport> response) {
+//                if(response.isSuccessful()){
+//                    Toast.makeText(getContext(), "Update Successful!!", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<AirImport> call, Throwable t) {
+//
+//            }
+//        });
     }
 }

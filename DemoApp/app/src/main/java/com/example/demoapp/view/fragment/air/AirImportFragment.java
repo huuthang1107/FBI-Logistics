@@ -20,13 +20,20 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.air.PriceListAirImportAdapter;
+import com.example.demoapp.adapter.PriceListAirImportAdapter;
 import com.example.demoapp.databinding.FragmentAirImportBinding;
 import com.example.demoapp.model.AirImport;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.air.air_import.InsertAirImportDialog;
 import com.example.demoapp.viewmodel.AirImportViewModel;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,8 +152,29 @@ public class AirImportFragment extends Fragment implements View.OnClickListener 
 
     private void getDataAirImport() {
         airImportList = new ArrayList<>();
-        mAirImportViewModel.getAirImportList().observe(getViewLifecycleOwner(), detailsPojoAir ->{
-            this.airImportList = sortAirImport(detailsPojoAir);
+        // get current user
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        // get path of database name "Users" cotaining users info
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Import");
+        // get all data from path
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                airImportList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    AirImport airImport = ds.getValue(AirImport.class);
+                    // get all users except currently signed is user
+                    airImportList.add(airImport);
+                    Toast.makeText(getContext(), airImport.getValid(), Toast.LENGTH_SHORT).show();
+                }
+                sortAirImport(airImportList);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
 
     }

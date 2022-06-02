@@ -7,6 +7,8 @@ public class AirImport implements Serializable {
     private String stt, aol, aod, dim, grossweight, typeofcargo, airfreight, surcharge, airlines,
             schedule, transittime, valid, note, month, continent, date_created;
 
+    public AirImport(){}
+
     public AirImport(String stt, String aol, String aod, String dim, String grossweight,
                      String typeofcargo, String airfreight, String surcharge, String airlines,
                      String schedule, String transittime, String valid, String note, String month,

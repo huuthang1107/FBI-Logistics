@@ -1,6 +1,8 @@
 package com.example.demoapp.view.dialog.imp;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -20,21 +22,31 @@ import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentDialogInsertImportLclBinding;
 import com.example.demoapp.model.ImportLcl;
 import com.example.demoapp.utilities.Constants;
+import com.example.demoapp.view.activity.LoginActivity;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
 import com.example.demoapp.viewmodel.ImportLclViewModel;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class InsertImportLclDialog extends DialogFragment implements View.OnClickListener {
 
@@ -43,6 +55,16 @@ public class InsertImportLclDialog extends DialogFragment implements View.OnClic
     private FragmentDialogInsertImportLclBinding binding;
     private CommunicateViewModel mCommunicateViewModel;
     private ImportLclViewModel mImportViewModel;
+
+
+    private List<ImportLcl> importLCLList;
+
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
 
     private Bundle bundle;
 
@@ -66,6 +88,31 @@ public class InsertImportLclDialog extends DialogFragment implements View.OnClic
         mImportViewModel = new ViewModelProvider(this).get(ImportLclViewModel.class);
         mCommunicateViewModel = new ViewModelProvider(requireActivity()).get(CommunicateViewModel.class);
 
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
+
+        importLCLList = new ArrayList<>();
+        progressDialog = new ProgressDialog(getContext());
+
+        // get some info of current user to include in post
+        userDBRef = FirebaseDatabase.getInstance().getReference("Users");
+        Query query = userDBRef.orderByChild("email").equalTo(email);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    name = "" + ds.child("name").getValue();
+                    email = "" + ds.child("email").getValue();
+                    dp = "" + ds.child("image").getValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
         initView();
         showDatePicker();
 
@@ -73,6 +120,17 @@ public class InsertImportLclDialog extends DialogFragment implements View.OnClic
         setData();
 
         return root;
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
     }
 
     public void setData() {
@@ -193,7 +251,7 @@ public class InsertImportLclDialog extends DialogFragment implements View.OnClic
      */
 
     public void process() {
-
+        String timeStamp = String.valueOf(System.currentTimeMillis());
         String term = Objects.requireNonNull(binding.tfTerm.getEditText()).getText().toString();
         String pol = Objects.requireNonNull(binding.tfPol.getEditText()).getText().toString();
         String pod = Objects.requireNonNull(binding.tfPod.getEditText()).getText().toString();
@@ -208,18 +266,40 @@ public class InsertImportLclDialog extends DialogFragment implements View.OnClic
         String valid = Objects.requireNonNull(binding.tfValid.getEditText()).getText().toString();
         String note = Objects.requireNonNull(binding.tfNote.getEditText()).getText().toString();
 
-        mCommunicateViewModel.makeChanges();
-        Call<ImportLcl> call = mImportViewModel.insertImport(term, pol, pod, listStr[0], of, localPol, localPod,
-                 carrier, schedule, transit, valid, note,
-                listStr[1], listStr[2], getCreatedDate());
 
-        call.enqueue(new Callback<ImportLcl>() {
+        HashMap<Object, String> hashMap = new HashMap<>();
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+        hashMap.put("pol", pol);
+        hashMap.put("pod", pod);
+        hashMap.put("term", term);
+        hashMap.put("cargo", listStr[0]);
+        hashMap.put("of", of);
+        hashMap.put("localPol", localPol);
+        hashMap.put("localPod", localPod);
+        hashMap.put("carrier", carrier);
+        hashMap.put("schedule", schedule);
+        hashMap.put("transitTime", transit);
+        hashMap.put("valid", valid);
+        hashMap.put("note", note);
+        hashMap.put("month", listStr[1]);
+        hashMap.put("continent", listStr[2]);
+        hashMap.put("createdDate", getCreatedDate());
+        hashMap.put("pTime", timeStamp);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Import_LCL");
+        // put data in this ref
+        ref.child(timeStamp).setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onResponse(@NonNull Call<ImportLcl> call, @NonNull Response<ImportLcl> response) {
+            public void onSuccess(Void unused) {
+                progressDialog.dismiss();
+
             }
-
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Call<ImportLcl> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

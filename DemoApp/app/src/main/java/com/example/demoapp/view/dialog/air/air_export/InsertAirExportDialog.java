@@ -1,5 +1,7 @@
 package com.example.demoapp.view.dialog.air.air_export;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,42 +14,52 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentDialogInsertAirBinding;
 import com.example.demoapp.model.AirExport;
 import com.example.demoapp.utilities.Constants;
-import com.example.demoapp.viewmodel.AirExportViewModel;
-import com.example.demoapp.viewmodel.CommunicateViewModel;
+import com.example.demoapp.view.activity.LoginActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-
-public class InsertAirExportDialog extends DialogFragment implements  View.OnClickListener {
+public class InsertAirExportDialog extends DialogFragment implements View.OnClickListener {
 
     private final String[] listStr = new String[2];
     private FragmentDialogInsertAirBinding insertAirBinding;
-    private ArrayAdapter<String>  adapterItemsMonth, adapterItemsContinent;
+    private ArrayAdapter<String> adapterItemsMonth, adapterItemsContinent;
 
-    private AirExportViewModel mAirViewModel;
-    private List<AirExport> airList = new ArrayList<>();
-    private CommunicateViewModel mCommunicateViewModel;
+    private List<AirExport> airList;
 
-    public static InsertAirExportDialog insertDiaLogAIR(){
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
+
+    public static InsertAirExportDialog insertDiaLogAIR() {
         return new InsertAirExportDialog();
     }
 
@@ -60,14 +72,51 @@ public class InsertAirExportDialog extends DialogFragment implements  View.OnCli
 
         View view = insertAirBinding.getRoot();
 
-        mAirViewModel = new ViewModelProvider(this).get(AirExportViewModel.class);
-        mCommunicateViewModel = new ViewModelProvider(getActivity()).get(CommunicateViewModel.class);
+//        mAirViewModel = new ViewModelProvider(this).get(AirExportViewModel.class);
+//        mCommunicateViewModel = new ViewModelProvider(getActivity()).get(CommunicateViewModel.class);
+
+        airList = new ArrayList<>();
+
+
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
+
+        progressDialog = new ProgressDialog(getContext());
+
+        userDBRef = FirebaseDatabase.getInstance().getReference("Users");
+        Query query = userDBRef.orderByChild("email").equalTo(email);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    name = "" + ds.child("name").getValue();
+                    email = "" + ds.child("email").getValue();
+                    dp = "" + ds.child("image").getValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         initView();
         showDatePicker();
 
         return view;
 
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
     }
 
     private String getCreatedDate() {
@@ -157,12 +206,12 @@ public class InsertAirExportDialog extends DialogFragment implements  View.OnCli
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn_function_add:
-                if(isFilled()) {
+                if (isFilled()) {
                     insertAIR();
                     dismiss();
-                }else{
+                } else {
                     Toast.makeText(getContext(), Constants.INSERT_FAILED, Toast.LENGTH_LONG).show();
                 }
                 break;
@@ -173,6 +222,7 @@ public class InsertAirExportDialog extends DialogFragment implements  View.OnCli
     }
 
     private void insertAIR() {
+        String timeStamp = String.valueOf(System.currentTimeMillis());
         String stAol = insertAirBinding.tfAol.getEditText().getText().toString();
         String stAod = insertAirBinding.tfAod.getEditText().getText().toString();
         String stDim = insertAirBinding.tfDim.getEditText().getText().toString();
@@ -186,39 +236,41 @@ public class InsertAirExportDialog extends DialogFragment implements  View.OnCli
         String stValid = insertAirBinding.tfValid.getEditText().getText().toString();
         String stNote = insertAirBinding.tfNotes.getEditText().getText().toString();
 
+        HashMap<Object, String> hashMap = new HashMap<>();
+        hashMap.put("aol", stAol);
+        hashMap.put("aod", stAod);
+        hashMap.put("dim", stDim);
+        hashMap.put("grossweight", stGross);
+        hashMap.put("typeofcargo", stType);
+        hashMap.put("airfreight", stFreight);
+        hashMap.put("surcharge", stSurcharge);
+        hashMap.put("airlines", stLines);
+        hashMap.put("schedule", stSchedule);
+        hashMap.put("transittime", stTransittime);
+        hashMap.put("valid", stValid);
+        hashMap.put("note", stNote);
+        hashMap.put("month", listStr[0]);
+        hashMap.put("continent", listStr[1]);
+        hashMap.put("date_created", getCreatedDate());
+        hashMap.put("pTime", timeStamp);
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
 
-        mCommunicateViewModel.makeChanges();
-        Call<AirExport> call = mAirViewModel.insertAir(stAol,stAod, stDim, stGross, stType, stFreight,
-                stSurcharge, stLines, stSchedule, stTransittime, stValid, stNote, listStr[0], listStr[1], getCreatedDate());
-        call.enqueue(new Callback<AirExport>() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Export");
+        ref.child(timeStamp).setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onResponse(Call<AirExport> call, Response<AirExport> response) {
-                if(response.isSuccessful()){
-                    Toast.makeText(getContext(), "Created Successful!!", Toast.LENGTH_LONG).show();
-                }
+            public void onSuccess(Void unused) {
+                progressDialog.dismiss();
             }
-
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(Call<AirExport> call, Throwable t) {
-
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
-    }
 
-//    public void resetEditText(){
-//        Objects.requireNonNull(insertAirBinding.tfAol.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfAod.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfDim.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfGross.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfTypeofcargo.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfAirfreight.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfSurcharge.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfAirlines.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfSchedule.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfTfTransitTime.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfValid.getEditText()).setText("");
-//        Objects.requireNonNull(insertAirBinding.tfNotes.getEditText()).setText("");
-//
+    }
 
 }

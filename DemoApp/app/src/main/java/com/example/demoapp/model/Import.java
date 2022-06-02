@@ -1,90 +1,30 @@
 package com.example.demoapp.model;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 
 public class Import implements Serializable {
-    @SerializedName("stt")
-    @Expose
     private String stt;
-
-    @SerializedName("pol")
-    @Expose
     private String pol;
-
-    @SerializedName("pod")
-    @Expose
     private String pod;
-
-    @SerializedName("of20")
-    @Expose
     private String of20;
-
-    @SerializedName("of40")
-    @Expose
     private String of40;
-
-    @SerializedName("of45")
-    @Expose
     private String of45;
-
-    @SerializedName("sur20")
-    @Expose
     private String sur20;
-
-    @SerializedName("sur40")
-    @Expose
     private String sur40;
-
-    @SerializedName("sur45")
-    @Expose
     private String sur45;
-
-    @SerializedName("total_freight")
-    @Expose
     private String totalFreight;
-
-    @SerializedName("carrier")
-    @Expose
     private String carrier;
-
-    @SerializedName("schedule")
-    @Expose
     private String schedule;
-
-    @SerializedName("transit_time")
-    @Expose
     private String transitTime;
-
-    @SerializedName("free_time")
-    @Expose
     private String freeTime;
-
-    @SerializedName("valid")
-    @Expose
     private String valid;
-
-    @SerializedName("note")
-    @Expose
     private String note;
-
-    @SerializedName("type")
-    @Expose
     private String type;
-
-    @SerializedName("month")
-    @Expose
     private String month;
-
-    @SerializedName("continent")
-    @Expose
     private String continent;
-
-    @SerializedName("created_date")
-    @Expose
     private String createdDate;
+
+    public Import(){}
 
     public Import(String stt, String pol, String pod, String of20, String of40, String of45,
                   String sur20, String sur40, String sur45, String totalFreight, String carrier,

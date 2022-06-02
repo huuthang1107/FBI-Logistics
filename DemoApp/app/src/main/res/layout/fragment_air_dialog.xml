@@ -11,7 +11,7 @@
     app:cardUseCompatPadding="true">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="450dp"
         android:id="@+id/row_cv_air"
         android:padding="10dp">
 

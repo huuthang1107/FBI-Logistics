@@ -20,13 +20,19 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.fcl.PriceListFclAdapter;
+import com.example.demoapp.adapter.PriceListFclAdapter;
 import com.example.demoapp.databinding.FragmentFclBinding;
-import com.example.demoapp.model.Fcl;
+import com.example.demoapp.model.FCLModel;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.fcl.InsertFclDialog;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
-import com.example.demoapp.viewmodel.FclViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +46,9 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
     private String radioItem = "All";
     private SearchView searchView;
 
-    private List<Fcl> listPriceList = new ArrayList<>();
+    private List<FCLModel> listPriceList = new ArrayList<>();
     private PriceListFclAdapter priceListFclAdapter;
 
-    private FclViewModel mFclViewModel;
 
     /**
      * this method will create a view (fragment)
@@ -63,7 +68,6 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
         View view = binding.getRoot();
 
         priceListFclAdapter = new PriceListFclAdapter(getContext());
-        mFclViewModel = new ViewModelProvider(this).get(FclViewModel.class);
 
         CommunicateViewModel mCommunicateViewModel = new ViewModelProvider(requireActivity()).get(CommunicateViewModel.class);
 
@@ -74,7 +78,7 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
         });
 
         setHasOptionsMenu(true);
-        getAllData();
+        getAllDataFCL();
         setAdapterItems();
         setUpButtons();
 
@@ -126,11 +130,11 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
      * @param c continent
      * @return get list by month and continent
      */
-    public List<Fcl> prepareDataForRecyclerView(String m, String c, String r) {
+    public List<FCLModel> prepareDataForRecyclerView(String m, String c, String r) {
         // reset a list when user choose different
-        List<Fcl> subList = new ArrayList<>();
+        List<FCLModel> subList = new ArrayList<>();
         try {
-            for (Fcl f : listPriceList) {
+            for (FCLModel f : listPriceList) {
                 if (r.equalsIgnoreCase("all")) {
                     if (f.getMonth().equalsIgnoreCase(m) && f.getContinent().equalsIgnoreCase(c)) {
                         subList.add(f);
@@ -148,11 +152,11 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
         return subList;
     }
 
-    public List<Fcl> prepareDataForResume(String m, String c, String r, List<Fcl> list) {
+    public List<FCLModel> prepareDataForResume(String m, String c, String r, List<FCLModel> list) {
         // reset a list when user choose different
-        List<Fcl> subList = new ArrayList<>();
+        List<FCLModel> subList = new ArrayList<>();
         try {
-            for (Fcl f : list) {
+            for (FCLModel f : list) {
                 if (r.equalsIgnoreCase("all")) {
                     if (f.getMonth().equalsIgnoreCase(m) && f.getContinent().equalsIgnoreCase(c)) {
                         subList.add(f);
@@ -174,10 +178,32 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
     /**
      * this method will get all data from database
      */
-    public void getAllData() {
+    public void getAllDataFCL(){
         this.listPriceList = new ArrayList<>();
+        // get current user
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        // get path of database name "Users" cotaining users info
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("FCL");
+        // get all data from path
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                listPriceList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    FCLModel fcl = ds.getValue(FCLModel.class);
+                    // get all users except currently signed is user
+                        listPriceList.add(fcl);
+                        Toast.makeText(getContext(), fcl.getNote2(),Toast.LENGTH_SHORT).show();
+                }
+                sortArray(listPriceList);
 
-        mFclViewModel.getFclList().observe(getViewLifecycleOwner(), detailsPojoFcl -> this.listPriceList = sortArray(detailsPojoFcl));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     /**
@@ -186,8 +212,8 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
      * @param list list to sort
      * @return sorted list
      */
-    public List<Fcl> sortArray(List<Fcl> list) {
-        List<Fcl> result = new ArrayList<>();
+    public List<FCLModel> sortArray(List<FCLModel> list) {
+        List<FCLModel> result = new ArrayList<>();
         try{
             for (int i = list.size() - 1; i >= 0; i--) {
                 result.add(list.get(i));
@@ -224,8 +250,7 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
         super.onResume();
 
         priceListFclAdapter = new PriceListFclAdapter(getContext());
-        mFclViewModel.getFclList().observe(getViewLifecycleOwner(), detailsPojoFcl ->
-                priceListFclAdapter.setDataFcl(prepareDataForResume(month, continent, radioItem, sortArray(detailsPojoFcl))));
+        priceListFclAdapter.setDataFcl(prepareDataForResume(month, continent, radioItem, sortArray(listPriceList)));
 
         binding.priceListRcv.setAdapter(priceListFclAdapter);
     }
@@ -300,8 +325,8 @@ public class FCLFragment extends Fragment implements View.OnClickListener {
 
     }
     private void filter(String text){
-        List<Fcl> filteredList = new ArrayList<>();
-        for( Fcl fcl: prepareDataForRecyclerView(month, continent, radioItem)){
+        List<FCLModel> filteredList = new ArrayList<>();
+        for( FCLModel fcl: prepareDataForRecyclerView(month, continent, radioItem)){
             if(fcl.getPol().toLowerCase().contains(text.toLowerCase())){
                 filteredList.add(fcl);
             }

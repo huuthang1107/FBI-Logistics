@@ -20,13 +20,18 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.Import.PriceListImportLclAdapter;
+import com.example.demoapp.adapter.PriceListImportLclAdapter;
 import com.example.demoapp.databinding.FragmentImportLclBinding;
 import com.example.demoapp.model.ImportLcl;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.imp.InsertImportLclDialog;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
 import com.example.demoapp.viewmodel.ImportLclViewModel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -157,10 +162,30 @@ public class ImportLclFragment extends Fragment implements View.OnClickListener 
      * this method will get all data from database
      */
     public void getAllData() {
-
         try {
-            mImportViewModel.getImportList().observe(getViewLifecycleOwner(), detailsPojoImports ->
-                    this.listPriceList = sortImportLcl(detailsPojoImports));
+            this.listPriceList = new ArrayList<>();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Import_LCL");
+            // get all data from path
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    listPriceList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        ImportLcl importLcl = ds.getValue(ImportLcl.class);
+                        // get all users except currently signed is user
+                        listPriceList.add(importLcl);
+                        Toast.makeText(getContext(), importLcl.getCarrier(),Toast.LENGTH_SHORT).show();
+                    }
+                    sortImportLcl(listPriceList);
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
         } catch (NullPointerException exception) {
             Toast.makeText(getContext(), exception.toString(), Toast.LENGTH_LONG).show();
         }

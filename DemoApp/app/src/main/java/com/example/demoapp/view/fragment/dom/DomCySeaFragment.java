@@ -18,8 +18,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.dom.CySeaDomAdapter;
+import com.example.demoapp.adapter.CySeaDomAdapter;
 import com.example.demoapp.databinding.FragmentDomCySeaBinding;
+import com.example.demoapp.model.DomCold;
 import com.example.demoapp.model.DomCySea;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.dom.dom_cy_sea.DialogDomCySeaInsert;

@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_home"
+        android:id="@+id/navigation_home_log"
         android:icon="@drawable/ic_home_black_24dp"
         android:title="@string/title_home" />
 
@@ -11,13 +11,13 @@
         android:icon="@drawable/ic_dashboard_black_24dp"
         android:title="@string/title_log" />
     <item
-        android:id="@+id/nav_message"
+        android:id="@+id/navigation_message_log"
         android:icon="@drawable/ic_message"
-        android:title="Tin Nhấn"/>
+        android:title="@string/Mesenger" />
     <item
-        android:id="@+id/nav_logout"
+        android:id="@+id/navigation_logout_log"
         android:icon="@drawable/ic_logout"
-        android:title="Đăng xuất"/>
+        android:title="@string/logout" />
 
 
 

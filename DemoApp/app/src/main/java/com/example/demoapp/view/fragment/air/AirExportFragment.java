@@ -21,13 +21,20 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.demoapp.R;
-import com.example.demoapp.adapter.air.PriceListAIRAdapter;
+import com.example.demoapp.adapter.PriceListAIRAdapter;
 import com.example.demoapp.databinding.FragmentAirExportBinding;
 import com.example.demoapp.model.AirExport;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.air.air_export.InsertAirExportDialog;
 import com.example.demoapp.viewmodel.AirExportViewModel;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,10 +79,30 @@ public class AirExportFragment extends Fragment implements View.OnClickListener 
 
     private void getDataAIR() {
         airList = new ArrayList<>();
-        mAirViewModel.getLclList().observe(getViewLifecycleOwner(), detailsPojoAir -> {
-            this.airList = sortAirExport(detailsPojoAir);
-        });
+        // get current user
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        // get path of database name "Users" cotaining users info
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Export");
+        // get all data from path
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                airList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    AirExport airExport = ds.getValue(AirExport.class);
+                    // get all users except currently signed is user
+                    airList.add(airExport);
+                    Toast.makeText(getContext(), airExport.getValid(), Toast.LENGTH_SHORT).show();
+                }
+                sortAirExport(airList);
 
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     public List<AirExport> sortAirExport(List<AirExport> list){

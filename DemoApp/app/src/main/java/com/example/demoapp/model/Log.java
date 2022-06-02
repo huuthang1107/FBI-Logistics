@@ -20,6 +20,8 @@ public class Log implements Serializable {
     private String type;
     private String date_created;
 
+    private Log (){}
+
     public Log(String stt, String tenhang, String hscode, String congdung, String hinhanh,
                String cangdi, String cangden, String loaihang, String soluongcuthe,
                String yeucaudacbiet, String price, String valid, String month, String importorexport,

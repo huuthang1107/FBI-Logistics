@@ -1,6 +1,8 @@
 package com.example.demoapp.view.dialog.imp;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -14,35 +16,50 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
-import com.example.demoapp.model.Import;
 import com.example.demoapp.databinding.FragmentDialogInsertImportBinding;
+import com.example.demoapp.model.Import;
 import com.example.demoapp.utilities.Constants;
-import com.example.demoapp.viewmodel.CommunicateViewModel;
-import com.example.demoapp.viewmodel.ImportViewModel;
+import com.example.demoapp.view.activity.LoginActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class InsertImportDialog extends DialogFragment implements View.OnClickListener {
 
     private final String[] listStr = new String[3];
 
     private FragmentDialogInsertImportBinding binding;
-    private CommunicateViewModel mCommunicateViewModel;
-    private ImportViewModel mImportViewModel;
+
+    private List<Import> importList;
+
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
+
 
     private Bundle bundle;
 
@@ -63,16 +80,49 @@ public class InsertImportDialog extends DialogFragment implements View.OnClickLi
 
         View root = binding.getRoot();
 
-        mImportViewModel = new ViewModelProvider(this).get(ImportViewModel.class);
-        mCommunicateViewModel = new ViewModelProvider(requireActivity()).get(CommunicateViewModel.class);
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
+
+        importList = new ArrayList<>();
+        progressDialog = new ProgressDialog(getContext());
+
+        // get some info of current user to include in post
+        userDBRef = FirebaseDatabase.getInstance().getReference("Users");
+        Query query = userDBRef.orderByChild("email").equalTo(email);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    name = "" + ds.child("name").getValue();
+                    email = "" + ds.child("email").getValue();
+                    dp = "" + ds.child("image").getValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         initView();
-        showDatePicker();
 
         bundle = getArguments();
         setData();
 
+        showDatePicker();
         return root;
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
     }
 
     public void setData() {
@@ -201,7 +251,7 @@ public class InsertImportDialog extends DialogFragment implements View.OnClickLi
      */
 
     public void process() {
-
+        String timeStamp = String.valueOf(System.currentTimeMillis());
         String pol = Objects.requireNonNull(binding.tfPol.getEditText()).getText().toString();
         String pod = Objects.requireNonNull(binding.tfPod.getEditText()).getText().toString();
 
@@ -221,20 +271,47 @@ public class InsertImportDialog extends DialogFragment implements View.OnClickLi
         String valid = Objects.requireNonNull(binding.tfValid.getEditText()).getText().toString();
         String note = Objects.requireNonNull(binding.tfNote.getEditText()).getText().toString();
 
-        mCommunicateViewModel.makeChanges();
-        Call<Import> call = mImportViewModel.insertImport(pol, pod, of20, of40, of45, sur20, sur40,
-                sur45, totalFreight, carrier, schedule, transit, free, valid, note, listStr[0],
-                listStr[1], listStr[2], getCreatedDate());
 
-        call.enqueue(new Callback<Import>() {
+        HashMap<Object, String> hashMap = new HashMap<>();
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+        hashMap.put("pol", pol);
+        hashMap.put("pod", pod);
+        hashMap.put("of20", of20);
+        hashMap.put("of40", of40);
+        hashMap.put("of45", of45);
+        hashMap.put("sur20", sur20);
+        hashMap.put("sur40", sur40);
+        hashMap.put("sur45", sur45);
+        hashMap.put("totalFreight", totalFreight);
+        hashMap.put("carrier", carrier);
+        hashMap.put("schedule", schedule);
+        hashMap.put("transitTime", transit);
+        hashMap.put("freeTime", free);
+        hashMap.put("valid", valid);
+        hashMap.put("note", note);
+        hashMap.put("type", listStr[0]);
+        hashMap.put("month", listStr[1]);
+        hashMap.put("continent", listStr[2]);
+        hashMap.put("createdDate", getCreatedDate());
+        hashMap.put("pTime", timeStamp);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Import");
+        // put data in this ref
+        ref.child(timeStamp).setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onResponse(@NonNull Call<Import> call, @NonNull Response<Import> response) {
+            public void onSuccess(Void unused) {
+                progressDialog.dismiss();
+
             }
-
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Call<Import> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     /**
@@ -474,5 +551,11 @@ public class InsertImportDialog extends DialogFragment implements View.OnClickLi
         double total = numOf + numSur;
 
         return String.valueOf(total);
+    }
+
+    @Override
+    public void onStart() {
+        checkUserStatus();
+        super.onStart();
     }
 }

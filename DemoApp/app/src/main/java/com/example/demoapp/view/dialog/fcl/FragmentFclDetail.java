@@ -12,7 +12,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.DialogFclDetailBinding;
-import com.example.demoapp.model.Fcl;
+import com.example.demoapp.model.FCLModel;
 import com.example.demoapp.utilities.Constants;
 
 public class FragmentFclDetail extends DialogFragment implements View.OnClickListener {
@@ -28,7 +28,7 @@ public class FragmentFclDetail extends DialogFragment implements View.OnClickLis
 
         bundle = getArguments();
         if (bundle != null) {
-            Fcl fcl = (Fcl) bundle.getSerializable(Constants.FCL_OBJECT);
+            FCLModel fcl = (FCLModel) bundle.getSerializable(Constants.FCL_OBJECT);
             bundle.putSerializable(Constants.FCL_UPDATE, fcl);
             bundle.putString(Constants.FCL_ADD_NEW, "YES");
             setData(fcl);
@@ -43,7 +43,7 @@ public class FragmentFclDetail extends DialogFragment implements View.OnClickLis
      * This method will set text for all text view
      * @param fcl model
      */
-    public void setData(Fcl fcl) {
+    public void setData(FCLModel fcl) {
         binding.tvRowPriceAsiaStt.setText(fcl.getStt());
         binding.tvRowPriceAsiaPol.setText(fcl.getPol());
         binding.tvRowPriceAsiaPod.setText(fcl.getPod());
@@ -52,10 +52,10 @@ public class FragmentFclDetail extends DialogFragment implements View.OnClickLis
         binding.tvRowPriceAsiaOf45.setText(fcl.getOf45());
         binding.tvRowPriceAsiaSu20.setText(fcl.getSu20());
         binding.tvRowPriceAsiaSu40.setText(fcl.getSu40());
-        binding.tvRowPriceAsiaLine.setText(fcl.getLinelist());
+        binding.tvRowPriceAsiaLine.setText(fcl.getLine());
         binding.tvRowPriceAsiaNotes1.setText(fcl.getNotes());
         binding.tvRowPriceAsiaValid.setText(fcl.getValid());
-        binding.tvRowPriceAsiaNotes2.setText(fcl.getNotes2());
+        binding.tvRowPriceAsiaNotes2.setText(fcl.getNote2());
         binding.tvRowPriceAsiaCreated.setText(fcl.getCreatedDate());
 
         String tvOf20 = getString(R.string.col_of2);
