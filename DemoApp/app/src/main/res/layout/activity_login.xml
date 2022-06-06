@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:background="#fff"
     tools:context=".view.activity.LoginActivity"
-    android:id="@+id/main_professional">
+    android:id="@+id/main_professional"
+    android:padding="20dp">
     <!-- TextView: label login -->
 
     <ImageView

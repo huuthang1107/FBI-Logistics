@@ -247,7 +247,7 @@ public class LoginActivity extends AppCompatActivity  {
                                             case "IMPORT":
                                                 startActivity(new Intent(LoginActivity.this, ProImportActivity.class));
                                                 break;
-                                            case "Sale":
+                                            case "SALE":
                                                 startActivity(new Intent(LoginActivity.this, SaleActivity.class));
                                                 break;
                                             case "FCL":

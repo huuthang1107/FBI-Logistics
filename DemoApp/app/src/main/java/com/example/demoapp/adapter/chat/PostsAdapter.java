@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -180,8 +182,24 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.MyHolder> {
         holder.btnShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // will implement later
-                Toast.makeText(context, "Share", Toast.LENGTH_SHORT).show();
+              /*
+              some posts contains only text, and some contains image and text so,
+              we will handle them both
+               */
+                // get image from imageview
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) holder.pImageIv.getDrawable();
+                if(bitmapDrawable == null){
+                    // post without image
+                    shareTextOnly(pTitle, pDescription);
+                }
+                else {
+                    //post with image
+
+
+                    //convert image to bimap
+                    Bitmap bitmap = bitmapDrawable.getBitmap();
+                    shareImageAndText(pTitle, pDescription, bitmap);
+                }
             }
         });
 
@@ -198,6 +216,21 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.MyHolder> {
             }
         });
 
+    }
+
+    private void shareImageAndText(String pTitle, String pDescription, Bitmap bitmap) {
+    }
+
+    private void shareTextOnly(String title, String description) {
+        // concatenate title and description to share
+        String shareBody = title + "\n" + description;
+
+        //share intent
+        Intent sIntent = new Intent(Intent.ACTION_SEND);
+        sIntent.setType("text/plain");
+        sIntent.putExtra(Intent.EXTRA_SUBJECT,"Subject Here");
+        sIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
+        context.startActivity(Intent.createChooser(sIntent,"Share Via"));
     }
 
     private void setLikes(MyHolder holder, String postKey) {

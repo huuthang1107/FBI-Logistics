@@ -44,7 +44,7 @@ public class FragmentFclDetail extends DialogFragment implements View.OnClickLis
      * @param fcl model
      */
     public void setData(FCLModel fcl) {
-        binding.tvRowPriceAsiaStt.setText(fcl.getStt());
+//        binding.tvRowPriceAsiaStt.setText(fcl.getStt());
         binding.tvRowPriceAsiaPol.setText(fcl.getPol());
         binding.tvRowPriceAsiaPod.setText(fcl.getPod());
         binding.tvRowPriceAsiaOf20.setText(fcl.getOf20());

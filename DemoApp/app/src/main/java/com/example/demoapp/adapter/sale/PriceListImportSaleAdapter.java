@@ -48,7 +48,7 @@ public class PriceListImportSaleAdapter extends RecyclerView.Adapter<PriceListIm
         Import imp = listPriceList.get(position);
         if (listPriceList.size() > 0) {
 
-            holder.stt.setText(imp.getStt());
+//            holder.stt.setText(imp.getStt());
             holder.pol.setText(imp.getPol());
             holder.pod.setText(imp.getPod());
             holder.of20.setText(imp.getOf20());

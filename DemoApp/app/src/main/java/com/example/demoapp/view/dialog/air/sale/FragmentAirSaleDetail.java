@@ -39,7 +39,7 @@ public class FragmentAirSaleDetail extends DialogFragment {
     }
 
     private void setDataAir(AirExport air) {
-        mAirSaleDetailBinding.tvRowPriceAsiaAirStt.setText(air.getStt());
+//        mAirSaleDetailBinding.tvRowPriceAsiaAirStt.setText(air.getStt());
         mAirSaleDetailBinding.tvRowPriceAsiaAirAol.setText(air.getAol());
         mAirSaleDetailBinding.tvRowPriceAsiaAirAod.setText(air.getAod());
         mAirSaleDetailBinding.tvRowPriceAsiaAirDim.setText(air.getDim());

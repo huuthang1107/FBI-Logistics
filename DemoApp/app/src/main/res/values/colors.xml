@@ -15,5 +15,6 @@
     <color name="rcv_price">#ebebeb</color>
     <color name="orange">#FF5722</color>
     <color name="primary">#09014B</color>
+    <color name="online">#05F61D</color>
 
 </resources>

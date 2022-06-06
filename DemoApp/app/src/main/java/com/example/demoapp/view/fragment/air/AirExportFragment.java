@@ -28,8 +28,6 @@ import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.air.air_export.InsertAirExportDialog;
 import com.example.demoapp.viewmodel.AirExportViewModel;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -79,8 +77,6 @@ public class AirExportFragment extends Fragment implements View.OnClickListener 
 
     private void getDataAIR() {
         airList = new ArrayList<>();
-        // get current user
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         // get path of database name "Users" cotaining users info
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Export");
         // get all data from path

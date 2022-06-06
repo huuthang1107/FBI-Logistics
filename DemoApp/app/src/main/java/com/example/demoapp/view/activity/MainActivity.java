@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                             case "IMPORT":
                                 startActivity(new Intent(MainActivity.this, ProImportActivity.class));
                                 break;
-                            case "Sale":
+                            case "SALE":
                                 startActivity(new Intent(MainActivity.this, SaleActivity.class));
                                 break;
                             case "FCL":

@@ -173,6 +173,7 @@ public class UpdateAirDialog extends DialogFragment implements View.OnClickListe
     }
 
     private void updateAir() {
+        String timeStamp = mAir.getpTime();
         String strAol = Objects.requireNonNull(mUpdateAir.tfAol.getEditText()).getText().toString();
         String strAod = Objects.requireNonNull(mUpdateAir.tfAod.getEditText()).getText().toString();
         String strDim = Objects.requireNonNull(mUpdateAir.tfDim.getEditText()).getText().toString();
@@ -185,6 +186,42 @@ public class UpdateAirDialog extends DialogFragment implements View.OnClickListe
         String strTransittime = Objects.requireNonNull(mUpdateAir.tfTfTransitTime.getEditText()).getText().toString();
         String strValid = Objects.requireNonNull(mUpdateAir.tfValid.getEditText()).getText().toString();
         String strNote = Objects.requireNonNull(mUpdateAir.tfNotes.getEditText()).getText().toString();
+
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("aol", strAol);
+        hashMap.put("aod", strAod);
+        hashMap.put("dim", strDim);
+        hashMap.put("grossweight", strGross);
+        hashMap.put("typeofcargo", strType);
+        hashMap.put("airfreight", strAirFreight);
+        hashMap.put("surcharge", strSurcharge);
+        hashMap.put("airlines", strAirLines);
+        hashMap.put("schedule", strSchedule);
+        hashMap.put("transittime", strTransittime);
+        hashMap.put("valid", strValid);
+        hashMap.put("note", strNote);
+        hashMap.put("month", listPriceAir[0]);
+        hashMap.put("continent", listPriceAir[1]);
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Export");
+        ref.child(timeStamp)
+                .updateChildren(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        progressDialog.dismiss();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
 
 
     }
@@ -238,7 +275,7 @@ public class UpdateAirDialog extends DialogFragment implements View.OnClickListe
         String strValid = Objects.requireNonNull(mUpdateAir.tfValid.getEditText()).getText().toString();
         String strNote = Objects.requireNonNull(mUpdateAir.tfNotes.getEditText()).getText().toString();
 
-        HashMap<Object, String> hashMap = new HashMap<>();
+        HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("aol", strAol);
         hashMap.put("aod", strAod);
         hashMap.put("dim", strDim);
@@ -260,17 +297,21 @@ public class UpdateAirDialog extends DialogFragment implements View.OnClickListe
         hashMap.put("uEmail", email);
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Export");
-        ref.child(timeStamp).setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                progressDialog.dismiss();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        ref.child(timeStamp)
+                .updateChildren(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        progressDialog.dismiss();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
 
     }
 

@@ -38,7 +38,7 @@ public class FragmentLogDetail extends DialogFragment implements View.OnClickLis
     }
 
     private void setDataLog(Log log){
-        mDetailBinding.tvRowPriceLogStt.setText(log.getStt());
+//        mDetailBinding.tvRowPriceLogStt.setText(log.getStt());
         mDetailBinding.tvRowPriceLogTenhang.setText(log.getTenhang());
         mDetailBinding.tvRowPriceLogHscode.setText(log.getHscode());
         mDetailBinding.tvRowPriceLogCongdung.setText(log.getCongdung());
@@ -50,7 +50,7 @@ public class FragmentLogDetail extends DialogFragment implements View.OnClickLis
         mDetailBinding.tvRowPriceLogYeucaudacbiet.setText(log.getYeucaudacbiet());
         mDetailBinding.tvRowPriceLogPrice.setText(log.getPrice());
         mDetailBinding.tvRowPriceLogType.setText(log.getType());
-        mDetailBinding.tvRowPriceLogDateCreated.setText(log.getDate_created());
+        mDetailBinding.tvRowPriceLogDateCreated.setText(log.getCreatedDate());
     }
 
     @Override

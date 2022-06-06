@@ -275,6 +275,7 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
     }
 
     private void updateAirImport() {
+        String timeStamp = mAirImport.getpTime();
         String strAol = Objects.requireNonNull(mAirImportDialogBinding.tfPolAirImport.getEditText()).getText().toString();
         String strAod = Objects.requireNonNull(mAirImportDialogBinding.tfPodAirImport.getEditText()).getText().toString();
         String strDim = Objects.requireNonNull(mAirImportDialogBinding.tfDimAirImport.getEditText()).getText().toString();
@@ -288,22 +289,40 @@ public class UpdateAirImportDialog extends DialogFragment implements View.OnClic
         String strValid = Objects.requireNonNull(mAirImportDialogBinding.tfValidAirImport.getEditText()).getText().toString();
         String strNotes = Objects.requireNonNull(mAirImportDialogBinding.tfNotesAirImport.getEditText()).getText().toString();
 
-//        mCommunicateViewModel.makeChanges();
-//        Call<AirImport> call = mAirImportViewModel.updateAir(mAirImport.getStt(), strAol, strAod, strDim, strGross, strType,
-//                strFreight, strSurcharge, strLine, strSchedule, strTransittime, strValid, strNotes,
-//                listPriceAirImport[0], listPriceAirImport[1]);
-//        call.enqueue(new Callback<AirImport>() {
-//            @Override
-//            public void onResponse(Call<AirImport> call, Response<AirImport> response) {
-//                if(response.isSuccessful()){
-//                    Toast.makeText(getContext(), "Update Successful!!", Toast.LENGTH_LONG).show();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<AirImport> call, Throwable t) {
-//
-//            }
-//        });
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("aol", strAol);
+        hashMap.put("aod", strAod);
+        hashMap.put("dim", strDim);
+        hashMap.put("grossweight", strGross);
+        hashMap.put("typeofcargo", strType);
+        hashMap.put("airfreight", strFreight);
+        hashMap.put("surcharge", strSurcharge);
+        hashMap.put("airlines", strLine);
+        hashMap.put("schedule", strSchedule);
+        hashMap.put("transittime", strTransittime);
+        hashMap.put("valid", strValid);
+        hashMap.put("note", strNotes);
+        hashMap.put("month", listPriceAirImport[0]);
+        hashMap.put("continent", listPriceAirImport[1]);
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Import");
+        ref.child(timeStamp)
+                .updateChildren(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        progressDialog.dismiss();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

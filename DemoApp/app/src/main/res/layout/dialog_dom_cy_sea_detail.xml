@@ -14,27 +14,27 @@
         android:layout_height="wrap_content"
         android:padding="10dp">
 
-        <TextView
-            android:id="@+id/tv_dom_cy_sea_label"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/col1"
-            android:textColor="@color/black"
-            android:textSize="17sp"
-            app:layout_constraintEnd_toEndOf="@id/guideline2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+<!--        <TextView-->
+<!--            android:id="@+id/tv_dom_cy_sea_label"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="@string/col1"-->
+<!--            android:textColor="@color/black"-->
+<!--            android:textSize="17sp"-->
+<!--            app:layout_constraintEnd_toEndOf="@id/guideline2"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
 
-        <TextView
-            android:id="@+id/tv_dom_cy_sea_station_stt"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/guideline2"
-            app:layout_constraintTop_toTopOf="parent" />
+<!--        <TextView-->
+<!--            android:id="@+id/tv_dom_cy_sea_station_stt"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:textColor="@color/black"-->
+<!--            android:textSize="17sp"-->
+<!--            android:textStyle="bold"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="@id/guideline2"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
 
         <TextView
             android:layout_width="0dp"
@@ -45,7 +45,7 @@
             android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="@id/guideline2"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_dom_cy_sea_station_stt" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_dom_cy_sea_station_go"
@@ -56,7 +56,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline2"
-            app:layout_constraintTop_toBottomOf="@id/tv_dom_cy_sea_station_stt" />
+            app:layout_constraintTop_toTopOf="parent" />
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"

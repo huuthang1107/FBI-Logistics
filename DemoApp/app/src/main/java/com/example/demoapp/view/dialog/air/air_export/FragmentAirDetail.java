@@ -34,7 +34,7 @@ public class FragmentAirDetail extends DialogFragment implements View.OnClickLis
         return view;
     }
     public  void setDataAir(AirExport air){
-        mAirDialogBinding.tvRowPriceAsiaAirStt.setText(air.getStt());
+//        mAirDialogBinding.tvRowPriceAsiaAirStt.setText(air.getStt());
         mAirDialogBinding.tvRowPriceAsiaAirAol.setText(air.getAol());
         mAirDialogBinding.tvRowPriceAsiaAirAod.setText(air.getAod());
         mAirDialogBinding.tvRowPriceAsiaAirDim.setText(air.getDim());

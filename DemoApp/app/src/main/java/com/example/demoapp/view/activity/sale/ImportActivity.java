@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.DialogFragment;
@@ -24,6 +25,13 @@ import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.imp.InsertImportDialog;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
 import com.example.demoapp.viewmodel.ImportViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -153,9 +161,35 @@ public class ImportActivity extends AppCompatActivity implements View.OnClickLis
      */
     public void getAllData() {
 
-        mImportViewModel.getImportList().observe(this, detailsPojoImports -> {
-            this.listPriceList = detailsPojoImports;
-        });
+        try {
+            this.listPriceList = new ArrayList<>();
+            // get current user
+            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            // get path of database name "Users" cotaining users info
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Import");
+            // get all data from path
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    listPriceList.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        Import imports = ds.getValue(Import.class);
+                        // get all users except currently signed is user
+                        listPriceList.add(imports);
+                        Toast.makeText(ImportActivity.this, imports.getCarrier(),Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+        } catch (NullPointerException exception) {
+            Toast.makeText(ImportActivity.this, exception.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

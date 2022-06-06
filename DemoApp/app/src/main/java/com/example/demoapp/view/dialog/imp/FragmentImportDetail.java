@@ -39,7 +39,7 @@ public class FragmentImportDetail extends DialogFragment implements View.OnClick
     }
 
     public void setData(Import imp){
-        binding.tvRowPriceImportStt.setText(imp.getStt());
+//        binding.tvRowPriceImportStt.setText(imp.getStt());
         binding.tvRowPriceImportPol.setText(imp.getPol());
         binding.tvRowPriceImportPod.setText(imp.getPod());
 

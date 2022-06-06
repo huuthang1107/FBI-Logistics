@@ -43,7 +43,7 @@ public class PriceListLogAdapter extends RecyclerView.Adapter<PriceListLogAdapte
         Log pricelog = mPriceListLog.get(position);
         if(mPriceListLog.size()>0){
 
-            holder.tvStt.setText(pricelog.getStt());
+//            holder.tvStt.setText(pricelog.getStt());
             holder.tvTenHang.setText(pricelog.getTenhang());
             holder.tvHScode.setText(pricelog.getHscode());
             holder.tvCongdung.setText(pricelog.getCongdung());

@@ -45,7 +45,7 @@ public class PriceListAIRSaleImportAdapter extends RecyclerView.Adapter<PriceLis
         AirImport priceAir = listAIRS.get(position);
         if ( listAIRS.size() > 0) {
 
-            holder.tvStt.setText(priceAir.getStt());
+//            holder.tvStt.setText(priceAir.getStt());
             holder.tvPol.setText(priceAir.getAol());
             holder.tvPod.setText(priceAir.getAod());
             holder.tvDim.setText(priceAir.getDim());
@@ -111,7 +111,7 @@ public class PriceListAIRSaleImportAdapter extends RecyclerView.Adapter<PriceLis
         public PriceAirImportViewHolder(@NonNull View itemView) {
             super(itemView);
             airCarView = itemView.findViewById(R.id.row_cv_air);
-            tvStt = itemView.findViewById(R.id.tv_row_price_asia_air_stt_import);
+//            tvStt = itemView.findViewById(R.id.tv_row_price_asia_air_stt_import);
             tvPol = itemView.findViewById(R.id.tv_row_price_asia_air_pol_import);
             tvPod = itemView.findViewById(R.id.tv_row_price_asia_air_pod_import);
             tvDim = itemView.findViewById(R.id.tv_row_price_asia_air_dim_import);

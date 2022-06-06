@@ -4,14 +4,14 @@ import java.io.Serializable;
 
 public class AirExport implements Serializable {
     private String stt, aol, aod, dim, grossweight, typeofcargo, airfreight, surcharge, airlines,
-            schedule, transittime, valid, note, month, continent, date_created;
+            schedule, transittime, valid, note, month, continent, date_created, pTime;
 
     public AirExport(){}
 
     public AirExport(String stt, String aol, String aod, String dim, String grossweight,
                      String typeofcargo, String airfreight, String surcharge, String airlines,
                      String schedule, String transittime, String valid, String note, String month,
-                     String continent, String date_created) {
+                     String continent, String date_created, String pTime) {
         this.stt = stt;
         this.aol = aol;
         this.aod = aod;
@@ -28,6 +28,15 @@ public class AirExport implements Serializable {
         this.month = month;
         this.continent = continent;
         this.date_created = date_created;
+        this.pTime = pTime;
+    }
+
+    public String getpTime() {
+        return pTime;
+    }
+
+    public void setpTime(String pTime) {
+        this.pTime = pTime;
     }
 
     public String getDate_created() {

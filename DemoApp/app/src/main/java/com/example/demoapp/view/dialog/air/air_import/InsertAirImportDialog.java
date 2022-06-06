@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentInsertAirImportDialogBinding;
@@ -73,8 +72,6 @@ public class InsertAirImportDialog extends DialogFragment implements View.OnClic
         mInsertAirImportDialogBinding = FragmentInsertAirImportDialogBinding.inflate(inflater, container, false);
         View view = mInsertAirImportDialogBinding.getRoot();
 
-        mAirViewModel = new ViewModelProvider(this).get(AirImportViewModel.class);
-        mCommunicateViewModel = new ViewModelProvider(getActivity()).get(CommunicateViewModel.class);
 
         mAuth = FirebaseAuth.getInstance();
         checkUserStatus();

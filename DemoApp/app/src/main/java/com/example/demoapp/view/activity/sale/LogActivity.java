@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.DialogFragment;
@@ -23,6 +24,11 @@ import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.log.InsertLogFragment;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
 import com.example.demoapp.viewmodel.LogViewModel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,19 +134,37 @@ public class LogActivity extends AppCompatActivity implements View.OnClickListen
         return subList;
     }
     private void getDataLog() {
-        mlistLog = new ArrayList<>();
-        mLogViewModel.getLogList().observe(this, detailsPojoLog -> {
-            this.mlistLog = detailsPojoLog;
-        });
+        try{
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("LOG");
+            // get all data from path
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    mlistLog.clear();
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        Log log = ds.getValue(Log.class);
+                        // get all users except currently signed is user
+                        mlistLog.add(log);
+
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }catch (NullPointerException e){
+            Toast.makeText(LogActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        mLogViewModel.getLogList().observe(this, airs -> {
-            mListLogAdapter.setDataLog( prepareDataForResume(month, importAndExport, airs));
-        });
         mLogBinding.priceListRcv.setAdapter(mListLogAdapter);
     }
 

@@ -1,49 +1,52 @@
 package com.example.demoapp.view.dialog.imp;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentUpdateImportDialogBinding;
 import com.example.demoapp.model.Import;
 import com.example.demoapp.utilities.Constants;
-import com.example.demoapp.viewmodel.CommunicateViewModel;
-import com.example.demoapp.viewmodel.ImportViewModel;
+import com.example.demoapp.view.activity.LoginActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class UpdateImportDialog extends DialogFragment implements View.OnClickListener {
 
     private FragmentUpdateImportDialogBinding binding;
 
-    private CommunicateViewModel mCommunicateViewModel;
-    private ImportViewModel mImportViewModel;
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
 
     private final String[] listStr = new String[3];
 
@@ -58,17 +61,30 @@ public class UpdateImportDialog extends DialogFragment implements View.OnClickLi
 
         View root = binding.getRoot();
 
-        mImportViewModel = new ViewModelProvider(this).get(ImportViewModel.class);
-        mCommunicateViewModel = new ViewModelProvider(requireActivity()).get(CommunicateViewModel.class);
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
 
         showDatePicker();
 
         bundle = getArguments();
         setInfo();
 
+        progressDialog = new ProgressDialog(getContext());
+
         initView();
 
         return root;
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
     }
 
     public static UpdateImportDialog getInstance() {
@@ -193,7 +209,7 @@ public class UpdateImportDialog extends DialogFragment implements View.OnClickLi
      * get data of fields and update
      */
     private void process() {
-
+        String timeStamp = imp.getpTime();
         String pol = Objects.requireNonNull(binding.tfPol.getEditText()).getText().toString();
         String pod = Objects.requireNonNull(binding.tfPod.getEditText()).getText().toString();
 
@@ -213,20 +229,47 @@ public class UpdateImportDialog extends DialogFragment implements View.OnClickLi
         String valid = Objects.requireNonNull(binding.tfValid.getEditText()).getText().toString();
         String note = Objects.requireNonNull(binding.tfNote.getEditText()).getText().toString();
 
-        mCommunicateViewModel.makeChanges();
-        Call<Import> call = mImportViewModel.updateImport(imp.getStt(), pol, pod, of20, of40, of45, sur20, sur40,
-                sur45, totalFreight, carrier, schedule, transit, free, valid, note, listStr[0],
-                listStr[1], listStr[2]);
 
-        call.enqueue(new Callback<Import>() {
-            @Override
-            public void onResponse(@NonNull Call<Import> call, @NonNull Response<Import> response) {
-            }
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+        hashMap.put("pol", pol);
+        hashMap.put("pod", pod);
+        hashMap.put("of20", of20);
+        hashMap.put("of40", of40);
+        hashMap.put("of45", of45);
+        hashMap.put("sur20", sur20);
+        hashMap.put("sur40", sur40);
+        hashMap.put("sur45", sur45);
+        hashMap.put("totalFreight", totalFreight);
+        hashMap.put("carrier", carrier);
+        hashMap.put("schedule", schedule);
+        hashMap.put("transitTime", transit);
+        hashMap.put("freeTime", free);
+        hashMap.put("valid", valid);
+        hashMap.put("note", note);
+        hashMap.put("type", listStr[0]);
+        hashMap.put("month", listStr[1]);
+        hashMap.put("continent", listStr[2]);
+        hashMap.put("pTime", timeStamp);
 
-            @Override
-            public void onFailure(@NonNull Call<Import> call, @NonNull Throwable t) {
-            }
-        });
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Import");
+        ref.child(timeStamp)
+                .updateChildren(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        progressDialog.dismiss();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     /**

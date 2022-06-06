@@ -1,5 +1,7 @@
 package com.example.demoapp.view.dialog.log;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -9,33 +11,47 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentUpdateLogBinding;
 import com.example.demoapp.model.Log;
 import com.example.demoapp.utilities.Constants;
-import com.example.demoapp.viewmodel.CommunicateViewModel;
-import com.example.demoapp.viewmodel.LogViewModel;
+import com.example.demoapp.view.activity.LoginActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class UpdateLogFragment extends DialogFragment implements View.OnClickListener {
 
     private FragmentUpdateLogBinding mLogBinding;
     private String[] listPriceLog = new String[3];
-    private LogViewModel mLogViewModel;
     private Bundle mBundle;
     private Log mLog;
-    private CommunicateViewModel mCommunicateViewModel;
+    private List<Log> logList;
+
+    private FirebaseAuth mAuth;
+    private DatabaseReference userDBRef;
+
+    private ProgressDialog progressDialog;
+    // user info
+    String name, email, uid, dp;
 
 
     public static UpdateLogFragment getInstance(){
@@ -48,13 +64,47 @@ public class UpdateLogFragment extends DialogFragment implements View.OnClickLis
         mLogBinding = FragmentUpdateLogBinding.inflate(inflater, container, false);
         View view = mLogBinding.getRoot();
 
-        mLogViewModel = new ViewModelProvider(this).get(LogViewModel.class);
-        mCommunicateViewModel = new ViewModelProvider(getActivity()).get(CommunicateViewModel.class);
+
+        mAuth = FirebaseAuth.getInstance();
+        checkUserStatus();
+
+        logList = new ArrayList<>();
+        progressDialog = new ProgressDialog(getContext());
+
+        // get some info of current user to include in post
+        userDBRef = FirebaseDatabase.getInstance().getReference("Users");
+        Query query = userDBRef.orderByChild("email").equalTo(email);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    name = "" + ds.child("name").getValue();
+                    email = "" + ds.child("email").getValue();
+                    dp = "" + ds.child("image").getValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
         mBundle = getArguments();
         updateInformationLog();
         unit();
         setUpButtons();
         return view;
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+            uid = user.getUid();
+        } else {
+            startActivity(new Intent(getContext(), LoginActivity.class));
+            getActivity().finish();
+        }
     }
 
     private void setUpButtons() {
@@ -169,57 +219,96 @@ public class UpdateLogFragment extends DialogFragment implements View.OnClickLis
         String strCondung = Objects.requireNonNull(mLogBinding.tfCongdung.getEditText()).getText().toString();
         String strHinhAnh = Objects.requireNonNull(mLogBinding.tfHinhanh.getEditText()).getText().toString();
         String strCangDi = Objects.requireNonNull(mLogBinding.tfCangdi.getEditText()).getText().toString();
-        String strHSCangDen = Objects.requireNonNull(mLogBinding.tfCangden.getEditText()).getText().toString();
+        String strCangDen = Objects.requireNonNull(mLogBinding.tfCangden.getEditText()).getText().toString();
         String strLoaiHang = Objects.requireNonNull(mLogBinding.tfLoaihang.getEditText()).getText().toString();
         String strSoLuongCuThe = Objects.requireNonNull(mLogBinding.tfSoluongcuthe.getEditText()).getText().toString();
         String strYeuCauDacBiet = Objects.requireNonNull(mLogBinding.tfYeucaudacbiet.getEditText()).getText().toString();
         String strPrice = Objects.requireNonNull(mLogBinding.tfPrice.getEditText()).getText().toString();
+        String timeStamp = mLog.getpTime();
 
-        mCommunicateViewModel.makeChanges();
-        Call<Log> call = mLogViewModel.updateDataLog(mLog.getStt(), strTenHang, strHSCode, strCondung, strHinhAnh, strCangDi, strHSCangDen, strLoaiHang, strSoLuongCuThe, strYeuCauDacBiet,
-                strPrice, listPriceLog[0], listPriceLog[1], listPriceLog[2]);
-        call.enqueue(new Callback<Log>() {
-            @Override
-            public void onResponse(Call<Log> call, Response<Log> response) {
-                if(response.isSuccessful()){
-                    Toast.makeText(getContext(), "Update Successful!!", Toast.LENGTH_LONG).show();
-                }
-            }
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+        hashMap.put("tenhang", strTenHang);
+        hashMap.put("hscode", strHSCode);
+        hashMap.put("congdung", strCondung);
+        hashMap.put("hinhanh", strHinhAnh);
+        hashMap.put("cangdi", strCangDi);
+        hashMap.put("cangden", strCangDen);
+        hashMap.put("loaihang", strLoaiHang);
+        hashMap.put("soluongcuthe", strSoLuongCuThe);
+        hashMap.put("yeucaudacbiet", strYeuCauDacBiet);
+        hashMap.put("price", strPrice);
+        hashMap.put("importorexport", listPriceLog[1] );
+        hashMap.put("type", listPriceLog[2]);
+        hashMap.put("month", listPriceLog[0]);
+        hashMap.put("createdDate", getCreatedDate());
 
-            @Override
-            public void onFailure(Call<Log> call, Throwable t) {
-
-            }
-        });
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("LOG");
+        ref.child(timeStamp)
+                .updateChildren(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        progressDialog.dismiss();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void insertLog() {
+        String timeStamp = String.valueOf(System.currentTimeMillis());
         String strTenHang = mLogBinding.tfTenhang.getEditText().getText().toString();
         String strHSCode = mLogBinding.tfHscode.getEditText().getText().toString();
         String strCondung = mLogBinding.tfCongdung.getEditText().getText().toString();
         String strHinhAnh = mLogBinding.tfHinhanh.getEditText().getText().toString();
         String strCangDi = mLogBinding.tfCangdi.getEditText().getText().toString();
-        String strHSCangDen = mLogBinding.tfCangden.getEditText().getText().toString();
+        String strCangDen = mLogBinding.tfCangden.getEditText().getText().toString();
         String strLoaiHang = mLogBinding.tfLoaihang.getEditText().getText().toString();
         String strSoLuongCuThe = mLogBinding.tfSoluongcuthe.getEditText().getText().toString();
         String strYeuCauDacBiet = mLogBinding.tfYeucaudacbiet.getEditText().getText().toString();
         String strPrice = mLogBinding.tfPrice.getEditText().getText().toString();
 
 
-        mCommunicateViewModel.makeChanges();
-        Call<Log> call = mLogViewModel.insertLog(strTenHang, strHSCode, strCondung, strHinhAnh, strCangDi, strHSCangDen, strLoaiHang, strSoLuongCuThe, strYeuCauDacBiet,
-                strPrice, listPriceLog[0], listPriceLog[1], listPriceLog[2], getCreatedDate());
-        call.enqueue(new Callback<Log>() {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("uid", uid);
+        hashMap.put("uName", name);
+        hashMap.put("uEmail", email);
+        hashMap.put("tenhang", strTenHang);
+        hashMap.put("hscode", strHSCode);
+        hashMap.put("congdung", strCondung);
+        hashMap.put("hinhanh", strHinhAnh);
+        hashMap.put("cangdi", strCangDi);
+        hashMap.put("cangden", strCangDen);
+        hashMap.put("loaihang", strLoaiHang);
+        hashMap.put("soluongcuthe", strSoLuongCuThe);
+        hashMap.put("yeucaudacbiet", strYeuCauDacBiet);
+        hashMap.put("price", strPrice);
+        hashMap.put("importorexport", listPriceLog[1] );
+        hashMap.put("type", listPriceLog[2]);
+        hashMap.put("month", listPriceLog[0]);
+        hashMap.put("createdDate", getCreatedDate());
+        hashMap.put("pTime", timeStamp);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("LOG");
+        // put data in this ref
+        ref.child(timeStamp).setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onResponse(Call<Log> call, Response<Log> response) {
-                if(response.isSuccessful()){
-                    Toast.makeText(getContext(), "Insert Successful!!", Toast.LENGTH_LONG).show();
-                }
+            public void onSuccess(Void unused) {
+                progressDialog.dismiss();
+
             }
-
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(Call<Log> call, Throwable t) {
-
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

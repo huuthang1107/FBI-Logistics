@@ -220,7 +220,7 @@ public class InsertLogFragment extends DialogFragment implements View.OnClickLis
         String strPrice = logBinding.tfPrice.getEditText().getText().toString();
 
 
-        HashMap<Object, String> hashMap = new HashMap<>();
+        HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("uid", uid);
         hashMap.put("uName", name);
         hashMap.put("uEmail", email);

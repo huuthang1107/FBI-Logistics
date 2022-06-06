@@ -21,11 +21,7 @@ import com.example.demoapp.model.Chats;
 import com.example.demoapp.model.Users;
 import com.example.demoapp.notifications.APIService;
 import com.example.demoapp.notifications.Client;
-import com.example.demoapp.notifications.Data;
-import com.example.demoapp.notifications.Response;
-import com.example.demoapp.notifications.Sender;
-import com.example.demoapp.notifications.Token;
-import com.example.demoapp.view.activity.LoginActivity;
+import com.example.demoapp.view.activity.MainActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -42,9 +38,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -262,7 +255,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Users users = snapshot.getValue(Users.class);
                 if(notify){
-                    senNotification(hisUid, users.getName(), message);
+//                    senNotification(hisUid, users.getName(), message);
                 }
                 notify = false;
             }
@@ -272,31 +265,17 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
-    }
 
-    private void senNotification(String hisUid, String name, String message) {
-        DatabaseReference allTokens = FirebaseDatabase.getInstance().getReference("tokensNotification");
-        Query query = allTokens.orderByKey().equalTo(hisUid);
-        query.addValueEventListener(new ValueEventListener() {
+        // create chatlist node/child in firebase database
+        DatabaseReference chatRef1 = FirebaseDatabase.getInstance().getReference("ChatList")
+                .child(myUid)
+                .child(hisUid);
+
+        chatRef1.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot ds: snapshot.getChildren()){
-                    Token token = ds.getValue(Token.class);
-                    Data data = new Data(myUid, name+":"+message, "New Message", hisUid, R.drawable.ic_face);
-
-                    Sender sender = new Sender(data, token.getToken());
-                    apiService.sendNotification(sender)
-                            .enqueue(new Callback<Response>() {
-                                @Override
-                                public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
-                                    Toast.makeText(ChatActivity.this,""+response.message(), Toast.LENGTH_SHORT).show();
-                                }
-
-                                @Override
-                                public void onFailure(Call<Response> call, Throwable t) {
-
-                                }
-                            });
+                if(!snapshot.exists()){
+                    chatRef1.child("id").setValue(hisUid);
                 }
             }
 
@@ -306,7 +285,58 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        DatabaseReference chatRef2 = FirebaseDatabase.getInstance().getReference("ChatList")
+                .child(hisUid)
+                .child(myUid);
+
+        chatRef2.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(!snapshot.exists()){
+                    chatRef2.child("id").setValue(myUid);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
+
+//    private void senNotification(String hisUid, String name, String message) {
+//        DatabaseReference allTokens = FirebaseDatabase.getInstance().getReference("tokensNotification");
+//        Query query = allTokens.orderByKey().equalTo(hisUid);
+//        query.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                for(DataSnapshot ds: snapshot.getChildren()){
+//                    Token token = ds.getValue(Token.class);
+//                    Data data = new Data(myUid, name+":"+message, "New Message", hisUid, R.drawable.ic_face);
+//
+//                    Sender sender = new Sender(data, token.getToken());
+//                    apiService.sendNotification(sender)
+//                            .enqueue(new Callback<Response>() {
+//                                @Override
+//                                public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+//                                    Toast.makeText(ChatActivity.this,""+response.message(), Toast.LENGTH_SHORT).show();
+//                                }
+//
+//                                @Override
+//                                public void onFailure(Call<Response> call, Throwable t) {
+//
+//                                }
+//                            });
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//
+//            }
+//        });
+//
+//    }
 
 
     private void checkUserStatus() {
@@ -314,7 +344,7 @@ public class ChatActivity extends AppCompatActivity {
         if (user != null) {
             myUid = user.getUid(); // currently signed is users uid
         } else {
-            startActivity(new Intent(this, LoginActivity.class));
+            startActivity(new Intent(this, MainActivity.class));
             finish();
         }
     }

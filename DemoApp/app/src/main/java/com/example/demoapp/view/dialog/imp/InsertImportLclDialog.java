@@ -267,7 +267,7 @@ public class InsertImportLclDialog extends DialogFragment implements View.OnClic
         String note = Objects.requireNonNull(binding.tfNote.getEditText()).getText().toString();
 
 
-        HashMap<Object, String> hashMap = new HashMap<>();
+        HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("uid", uid);
         hashMap.put("uName", name);
         hashMap.put("uEmail", email);

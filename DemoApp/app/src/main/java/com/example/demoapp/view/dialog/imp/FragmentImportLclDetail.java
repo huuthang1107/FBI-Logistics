@@ -40,7 +40,7 @@ public class FragmentImportLclDetail extends DialogFragment implements View.OnCl
     }
 
     public void setData(ImportLcl imp){
-        binding.tvRowPriceImportLclStt.setText(imp.getStt());
+//        binding.tvRowPriceImportLclStt.setText(imp.getStt());
         binding.tvRowPriceImportLclTerm.setText(imp.getTerm());
         binding.tvRowPriceImportLclPol.setText(imp.getPol());
         binding.tvRowPriceImportLclPod.setText(imp.getPod());

@@ -1,19 +1,27 @@
 package com.example.demoapp.adapter.chat;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.demoapp.R;
 import com.example.demoapp.model.Comment;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.Calendar;
@@ -23,11 +31,15 @@ import java.util.Locale;
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHolder> {
     Context context;
     List<Comment> commentList;
+    String myUid, postId;
 
-    public CommentsAdapter(Context context, List<Comment> commentList) {
+    public CommentsAdapter(Context context, List<Comment> commentList, String myUid, String postId) {
         this.context = context;
         this.commentList = commentList;
+        this.myUid = myUid;
+        this.postId = postId;
     }
+
 
     @NonNull
     @Override
@@ -63,6 +75,60 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyHold
 
         }
 
+        // comment click listener
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // check if this comment is by currently signed in user or not
+                if(myUid.equals(uid)){
+                    // my comment
+                    // show delete dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(v.getRootView().getContext());
+                    builder.setTitle("Delete");
+                    builder.setMessage("Are you sure to delete this comment?");
+                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // delete comment
+                            deleteComment(cid);
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    // show dialog
+                    builder.create().show();
+                }else{
+                    // not my comment
+                    Toast.makeText(context, "Can't delete other's commert...", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+    }
+
+    private void deleteComment(String cid) {
+       final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Posts").child(postId);
+        ref.child("Comments").child(cid).removeValue(); // it will delete the comment
+
+        // now update the comments
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String comments = "" + snapshot.child("pComments").getValue();
+                int newCommentVal = Integer.parseInt(comments) -1;
+                ref.child("pComments").setValue("" + newCommentVal);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
     }
 

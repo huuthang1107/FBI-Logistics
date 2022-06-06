@@ -27,6 +27,11 @@ import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.log.InsertLogFragment;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
 import com.example.demoapp.viewmodel.LogViewModel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,10 +137,39 @@ public class LogFragment extends Fragment implements View.OnClickListener {
 
     private void getDataLog() {
         mlistLog = new ArrayList<>();
-        mLogViewModel.getLogList().observe(getViewLifecycleOwner(), detailsPojoLog -> {
-            this.mlistLog = detailsPojoLog;
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("LOG");
+        // get all data from path
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mlistLog.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Log log = ds.getValue(Log.class);
+                    // get all users except currently signed is user
+                    mlistLog.add(log);
+
+                }
+                sortLog(mlistLog);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
+
     }
+
+    public List<Log> sortLog(List<Log> list){
+        List<Log> result = new ArrayList<>();
+        for (int i = list.size()-1; i >=0; i--){
+            result.add(list.get(i));
+        }
+        return  result;
+    }
+
+
     public List<Log> prepareDataForResume(String m, String c, List<Log> list) {
         // reset a list when user choose different
         List<Log> subList = new ArrayList<>();
@@ -155,9 +189,6 @@ public class LogFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
 
-        mLogViewModel.getLogList().observe(getViewLifecycleOwner(), airs -> {
-            mListLogAdapter.setDataLog( prepareDataForResume(month, importAndExport, airs));
-        });
         logBinding.priceListRcv.setAdapter(mListLogAdapter);
     }
 

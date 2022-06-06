@@ -16,15 +16,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.demoapp.R;
 import com.example.demoapp.databinding.FragmentDialogUpdateFclBinding;
 import com.example.demoapp.model.FCLModel;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.activity.LoginActivity;
-import com.example.demoapp.viewmodel.CommunicateViewModel;
-import com.example.demoapp.viewmodel.FclViewModel;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -53,8 +52,6 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
     // user info
     String name, email, uid, dp;
 
-    private FclViewModel mFclViewModel;
-    private CommunicateViewModel mCommunicateViewModel;
     private Bundle bundle;
 
 
@@ -78,8 +75,6 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
 
         View view = binding.getRoot();
 
-        mFclViewModel = new ViewModelProvider(this).get(FclViewModel.class);
-        mCommunicateViewModel = new ViewModelProvider(requireActivity()).get(CommunicateViewModel.class);
 
         mAuth = FirebaseAuth.getInstance();
         checkUserStatus();
@@ -292,9 +287,10 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
         String notes = Objects.requireNonNull(binding.tfNotes.getEditText()).getText().toString();
         String valid = Objects.requireNonNull(binding.tfValid.getEditText()).getText().toString();
         String note2 = Objects.requireNonNull(binding.tfNotes2.getEditText()).getText().toString();
+        String timeStamp = fcl.getpTime();
 
 
-        HashMap<Object, String> hashMap = new HashMap<>();
+        HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("uid", uid);
         hashMap.put("uName", name);
         hashMap.put("uEmail", email);
@@ -317,13 +313,21 @@ public class UpdateFclDialog extends DialogFragment implements View.OnClickListe
         hashMap.put("continent", listStr[2]);
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("FCL");
-        // put data in this ref
-//        ref.child("pTime").updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void unused) {
-//
-//            }
-//        });
+        ref.child(timeStamp)
+                .updateChildren(hashMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        progressDialog.dismiss();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     public void updateFCL(){

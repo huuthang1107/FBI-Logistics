@@ -63,7 +63,7 @@ public class DialogDomDryDetail extends DialogFragment {
             bundle.putSerializable(Constants.DOM_DRY_UPDATE, domDry);
             bundle.putString(Constants.DOM_DRY_ADD_NEW, "YES");
 
-            binding.tvDomDryProductStt.setText(domDry.getStt());
+//            binding.tvDomDryProductStt.setText(domDry.getStt());
             binding.tvDomDryProductName.setText(domDry.getName());
             binding.tvDomDryWeight.setText(domDry.getWeight());
             binding.tvDomDryQuantityPallet.setText(domDry.getQuantityPallet());

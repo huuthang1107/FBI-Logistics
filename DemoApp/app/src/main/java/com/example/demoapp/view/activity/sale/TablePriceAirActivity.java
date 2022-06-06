@@ -28,6 +28,11 @@ import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.air.air_export.InsertAirExportDialog;
 import com.example.demoapp.viewmodel.AirExportViewModel;
 import com.example.demoapp.viewmodel.CommunicateViewModel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,8 +115,25 @@ public class TablePriceAirActivity extends AppCompatActivity implements View.OnC
 
     private void getDataAIR() {
         airList = new ArrayList<>();
-        mAirViewModel.getLclList().observe(this, detailsPojoAir -> {
-            this.airList = detailsPojoAir;
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Air_Export");
+        // get all data from path
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                airList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    AirExport airExport = ds.getValue(AirExport.class);
+                    // get all users except currently signed is user
+                    airList.add(airExport);
+                    Toast.makeText(TablePriceAirActivity.this, airExport.getValid(), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
     }
     public void setDataForRecyclerView(String m, String c) {

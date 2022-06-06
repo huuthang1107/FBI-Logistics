@@ -149,7 +149,7 @@ PriceListAirImportAdapter extends RecyclerView.Adapter<PriceListAirImportAdapter
         public PriceAirImportViewHolder(@NonNull View itemView) {
             super(itemView);
             airCarView = itemView.findViewById(R.id.row_cv_air);
-            tvStt = itemView.findViewById(R.id.tv_row_price_asia_air_stt_import);
+//            tvStt = itemView.findViewById(R.id.tv_row_price_asia_air_stt_import);
             tvPol = itemView.findViewById(R.id.tv_row_price_asia_air_pol_import);
             tvPod = itemView.findViewById(R.id.tv_row_price_asia_air_pod_import);
             tvDim = itemView.findViewById(R.id.tv_row_price_asia_air_dim_import);

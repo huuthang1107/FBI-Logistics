@@ -16,7 +16,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.demoapp.R;
-import com.example.demoapp.model.Fcl;
+import com.example.demoapp.model.FCLModel;
 import com.example.demoapp.utilities.Constants;
 import com.example.demoapp.view.dialog.fcl.sale.FragmentFclSaleDetail;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class PriceListFclSaleAdapter extends RecyclerView.Adapter<PriceListFclSaleAdapter.ViewHolder> {
 
     private final Context context;
-    private List<Fcl> mListDetailFcl;
+    private List<FCLModel> mListDetailFcl;
 
     public PriceListFclSaleAdapter(Context context) {
         this.context = context;
@@ -43,10 +43,10 @@ public class PriceListFclSaleAdapter extends RecyclerView.Adapter<PriceListFclSa
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Fcl priceListModel = mListDetailFcl.get(position);
+        FCLModel priceListModel = mListDetailFcl.get(position);
         if (mListDetailFcl.size() > 0) {
 
-            holder.stt.setText(priceListModel.getStt());
+//            holder.stt.setText(priceListModel.getStt());
             holder.pol.setText(priceListModel.getPol());
             holder.pod.setText(priceListModel.getPod());
             holder.of20.setText(priceListModel.getOf20());
@@ -54,10 +54,10 @@ public class PriceListFclSaleAdapter extends RecyclerView.Adapter<PriceListFclSa
             holder.of45.setText(priceListModel.getOf45());
             holder.su20.setText(priceListModel.getSu20());
             holder.su40.setText(priceListModel.getSu40());
-            holder.line.setText(priceListModel.getLinelist());
+            holder.line.setText(priceListModel.getLine());
             holder.notes1.setText(priceListModel.getNotes());
             holder.valid.setText(priceListModel.getValid());
-            holder.notes2.setText(priceListModel.getNotes2());
+            holder.notes2.setText(priceListModel.getNote2());
 
         } else {
             return;
@@ -69,7 +69,7 @@ public class PriceListFclSaleAdapter extends RecyclerView.Adapter<PriceListFclSa
      * Start detail dialog
      * @param fcl model
      */
-    public void goToDetail(Fcl fcl){
+    public void goToDetail(FCLModel fcl){
         FragmentActivity activity = (FragmentActivity) context;
         FragmentManager fm = activity.getSupportFragmentManager();
         DialogFragment dialogFragment = FragmentFclSaleDetail.getInstance();
@@ -91,12 +91,12 @@ public class PriceListFclSaleAdapter extends RecyclerView.Adapter<PriceListFclSa
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void setDataFcl(List<Fcl> list) {
+    public void setDataFcl(List<FCLModel> list) {
         this.mListDetailFcl = list;
         notifyDataSetChanged();
     }
 
-    public void filterList(List<Fcl> filteredList) {
+    public void filterList(List<FCLModel> filteredList) {
         mListDetailFcl = filteredList;
         notifyDataSetChanged();
     }

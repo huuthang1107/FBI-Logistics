@@ -45,7 +45,7 @@ public class PriceListFclAdapter extends RecyclerView.Adapter<PriceListFclAdapte
         FCLModel priceListModel = mListDetailFcl.get(position);
         if (mListDetailFcl.size() > 0) {
 
-            holder.stt.setText(priceListModel.getStt());
+//            holder.stt.setText(priceListModel.getStt());
             holder.pol.setText(priceListModel.getPol());
             holder.pod.setText(priceListModel.getPod());
             holder.of20.setText(priceListModel.getOf20());
